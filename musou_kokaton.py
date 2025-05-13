@@ -92,19 +92,16 @@ class Bird(pg.sprite.Sprite):
         引数1 key_lst：押下キーの真理値リスト
         引数2 screen：画面Surface
         """
-<<<<<<< HEAD
         if key_lst[pg.K_LSHIFT]:
             self.speed = 20
         else:
             self.speed = 10
-=======
 
-        if key_lst[pg.K_RSHIFT] and self.state == "normal" and score.value > 100: #発動条件
+        if key_lst[pg.K_RSHIFT] and self.state == "normal" and score.value > 500: #発動条件
             self.state = "hyper" #状態
             self.hyper_life = 500 #発動時間
             score.value -= 100 #消費スコア
         
->>>>>>> C0A24230/feature4
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
             if key_lst[k]:
@@ -118,10 +115,6 @@ class Bird(pg.sprite.Sprite):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
 
-<<<<<<< HEAD
-        # key_lst == pg.K_LSHIFT and key_lst == pg.K_LSHIFT:
-
-=======
         #無敵中は画像を変更
         if self.state == "hyper": #状態
             self.image = pg.transform.laplacian(self.image) #発動中の画像
@@ -131,7 +124,6 @@ class Bird(pg.sprite.Sprite):
 
         screen.blit(self.image, self.rect)
         return
->>>>>>> C0A24230/feature4
 
 class Bomb(pg.sprite.Sprite):
     """
