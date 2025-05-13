@@ -74,6 +74,9 @@ class Bird(pg.sprite.Sprite):
         self.speed = 10
         
 
+        self.state = "normal" #状態の変数(普通の状態)
+        self.hyper_life = 0 #発動時間の変数(普通の状態)
+
     def change_img(self, num: int, screen: pg.Surface):
         """
         こうかとん画像を切り替え，画面に転送する
@@ -83,16 +86,25 @@ class Bird(pg.sprite.Sprite):
         self.image = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
         screen.blit(self.image, self.rect)
 
-    def update(self, key_lst: list[bool], screen: pg.Surface):
+    def update(self, key_lst: list[bool], screen: pg.Surface, score):
         """
         押下キーに応じてこうかとんを移動させる
         引数1 key_lst：押下キーの真理値リスト
         引数2 screen：画面Surface
         """
+<<<<<<< HEAD
         if key_lst[pg.K_LSHIFT]:
             self.speed = 20
         else:
             self.speed = 10
+=======
+
+        if key_lst[pg.K_RSHIFT] and self.state == "normal" and score.value > 100: #発動条件
+            self.state = "hyper" #状態
+            self.hyper_life = 500 #発動時間
+            score.value -= 100 #消費スコア
+        
+>>>>>>> C0A24230/feature4
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
             if key_lst[k]:
@@ -105,10 +117,21 @@ class Bird(pg.sprite.Sprite):
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
-        screen.blit(self.image, self.rect)
 
+<<<<<<< HEAD
         # key_lst == pg.K_LSHIFT and key_lst == pg.K_LSHIFT:
 
+=======
+        #無敵中は画像を変更
+        if self.state == "hyper": #状態
+            self.image = pg.transform.laplacian(self.image) #発動中の画像
+            self.hyper_life -= 1 #1減算
+            if self.hyper_life <= 0: #0未満になった時
+                self.state = "normal" #普通の状態に戻す
+
+        screen.blit(self.image, self.rect)
+        return
+>>>>>>> C0A24230/feature4
 
 class Bomb(pg.sprite.Sprite):
     """
@@ -292,13 +315,16 @@ def main():
             score.value += 1  # 1点アップ
 
         for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
-            bird.change_img(8, screen)  # こうかとん悲しみエフェクト
-            score.update(screen)
-            pg.display.update()
-            time.sleep(2)
-            return
+            if bird.state == "hyper":
+                score.value += 1 #スコア加算
+            else:
+                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+                score.update(screen)
+                pg.display.update()
+                time.sleep(2)
+                return
 
-        bird.update(key_lst, screen)
+        bird.update(key_lst, screen, score)
         beams.update()
         beams.draw(screen)
         emys.update()
