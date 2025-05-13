@@ -272,6 +272,7 @@ class EMP():
         self.screen.blit(self.image, (0, 0))
         pg.display.update()
         pg.time.delay(50)
+        
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
