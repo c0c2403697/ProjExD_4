@@ -248,6 +248,40 @@ class Score:
     def update(self, screen: pg.Surface):
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
+
+
+
+
+class EMP():
+    """
+    電磁パルス
+    """
+    def __init__(self,emys:pg.sprite.Group,bombs:pg.sprite.Group,screen:pg.surface):
+        self.emys=emys
+        self.bombs=bombs
+        self.screen=screen
+
+        self.image=pg.Surface((WIDTH,HEIGHT))
+        pg.draw.rect(self.image,(255,255,0),(0,0,WIDTH,HEIGHT)) 
+        self.image.set_alpha(128)  
+
+    def activate(self):
+        for emy in self.emys:
+            emy.interval=math.inf
+            try:
+                emy.image = pg.transform.laplacian(emy.image)
+            except:
+                pass
+            
+    
+        for bomb in self.bombs:
+            bomb.speed = max(1, bomb.speed // 2)
+            bomb.state = "inactive"
+
+        self.screen.blit(self.image, (0, 0))
+        pg.display.update()
+        pg.time.delay(50)
+        
 class Gravity(pg.sprite.Sprite):
     """
     • 重力場：画面全体に透明度のある黒い矩形
@@ -267,6 +301,7 @@ class Gravity(pg.sprite.Sprite):
         self.life-=1
         if(self.life<0):
             self.kill()
+            
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -308,9 +343,7 @@ def main():
             score.value += 10  # 10点アップ
             bird.change_img(6, screen)  # こうかとん喜びエフェクト
 
-        for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():  # ビームと衝突した爆弾リスト
-            exps.add(Explosion(bomb, 50))  # 爆発エフェクト
-            score.value += 1  # 1点アップ
+        
 
         for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
             bird.change_img(8, screen)  # こうかとん悲しみエフェクト
@@ -318,6 +351,14 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
+
+        
+        emp = EMP(emys, bombs, screen)
+        if key_lst[pg.K_e] and score.value >= 20: # eが押されるかつ２０以上
+            emp.activate()
+            score.value -= 20
+
+
         for bomb in pg.sprite.groupcollide(gravitys,bombs,True,True).keys():
             exps.add(Explosion(bomb, 50))
             score.value+=1
@@ -326,6 +367,7 @@ def main():
             bird.change_img(6, screen)
             score.value+=10
             
+
 
         bird.update(key_lst, screen)
         beams.update()
@@ -349,3 +391,4 @@ if __name__ == "__main__":
     main()
     pg.quit()
     sys.exit()
+
