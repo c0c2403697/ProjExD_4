@@ -241,6 +241,34 @@ class Score:
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
 
+class Shield(pg.sprite.Sprite):
+    """
+    こうかとんの防御壁と発動時間に関するクラス
+    """
+    def __init__(self,bird,life):  
+        super().__init__()
+        self.life = life
+        self.image = pg.Surface((20,bird.rect.height*2))
+        pg.draw.rect(self.image,(0,0,255),(0,0,20,bird.rect.height*2))
+        vx,vy = bird.dire
+        angle = math.degrees(math.atan2(-vy,vx))
+        self.image = pg.transform.rotozoom(self.image,angle,1.0)
+        # self.rect = bird.rect
+        self.rect = self.image.get_rect()
+        self.rect.centerx = bird.rect.centerx + vx * bird.rect.width
+        self.rect.centery = bird.rect.centery + vy * bird.rect.height
+        
+    def update(self):
+        self.life -= 1
+        if self.life  < 0:
+            self.kill()
+
+    # def update(self, key_lst, screen: pg.Surface, score):
+    #     if key_lst[pg.s] and score.value > 50:
+    #         self.
+
+
+
 
 def main():
     pg.display.set_caption("真！こうかとん無双")
@@ -253,6 +281,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    shields = pg.sprite.Group()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -263,6 +292,10 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_s and len(shields) == 0:
+                if score.value > 50:
+                    shields.add(Shield(bird,400))
+                    print("aaaa")
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -299,6 +332,8 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        shields.update()
+        shields.draw(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
