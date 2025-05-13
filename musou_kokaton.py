@@ -248,8 +248,25 @@ class Score:
     def update(self, screen: pg.Surface):
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
-
-
+class Gravity(pg.sprite.Sprite):
+    """
+    • 重力場：画面全体に透明度のある黒い矩形
+    • 発動時間：400フレーム
+    • 効果：重力球の範囲内の爆弾を打ち落とす
+    • 発動条件：リターンキー押下，かつ，スコアが200より大
+    • 消費スコア：200
+    """
+    def __init__(self,life):
+        super().__init__()
+        self.life = life
+        self.image = pg.Surface((WIDTH,HEIGHT))
+        pg.draw.rect(self.image,(0,0,0),(0,0,WIDTH,HEIGHT))
+        self.image.set_alpha(128)
+        self.rect=self.image.get_rect()
+    def update(self):
+        self.life-=1
+        if(self.life<0):
+            self.kill()
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -261,6 +278,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    gravitys = pg.sprite.Group()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -272,6 +290,9 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_RETURN and score.value >=200:
+                score.value-=200
+                gravitys.add(Gravity(400))
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -297,6 +318,14 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
+        for bomb in pg.sprite.groupcollide(gravitys,bombs,True,True).keys():
+            exps.add(Explosion(bomb, 50))
+            score.value+=1
+        for emy in pg.sprite.groupcollide(emys,gravitys,True,True).keys():
+            exps.add(Explosion(emy, 50))
+            bird.change_img(6, screen)
+            score.value+=10
+            
 
         bird.update(key_lst, screen)
         beams.update()
@@ -305,6 +334,8 @@ def main():
         emys.draw(screen)
         bombs.update()
         bombs.draw(screen)
+        gravitys.update()
+        gravitys.draw(screen)
         exps.update()
         exps.draw(screen)
         score.update(screen)
